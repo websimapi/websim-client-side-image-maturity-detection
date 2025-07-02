@@ -222,34 +222,166 @@
     </div>
 
     <div class="explanations">
-        <h2>Available Methods & How They Work</h2>
+        <h2>📋 Copy-Paste Code Snippet</h2>
+        <p>Want to add NSFW detection to your own website? Copy this simple code snippet:</p>
         
-        <div class="explanation-section">
-            <div class="explanation-title">1. NSFW.js (Recommended)</div>
-            <p>Uses a pre-trained TensorFlow.js model specifically designed for NSFW content detection. Most accurate method.</p>
-            <p><strong>Pros:</strong> High accuracy, specifically trained for this task</p>
-            <p><strong>Cons:</strong> Larger model size (~1MB), requires internet for initial download</p>
-        </div>
+        <div style="position: relative; background: #1e1e1e; color: #ffffff; padding: 20px; border-radius: 10px; margin: 20px 0; font-family: Monaco, monospace; font-size: 14px; line-height: 1.4; overflow-x: auto;">
+            <button id="copyButton" style="position: absolute; top: 10px; right: 10px; background: #667eea; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; font-size: 12px;">Copy to Clipboard</button>
+            <pre id="codeSnippet" style="margin: 0; white-space: pre-wrap;">// Simple Client-Side NSFW Detection
+// Add this to your HTML head:
+// &lt;script src="https://api.websim.com/blobs/0197cc2d-1c44-73ff-86ab-2c58b5d8657d.js"&gt;&lt;/script&gt;
 
-        <div class="explanation-section">
-            <div class="explanation-title">2. Skin Tone Detection</div>
-            <p>Analyzes pixel colors to detect skin tones and calculates percentage of skin-colored pixels.</p>
-            <p><strong>Pros:</strong> Fast, lightweight, no external dependencies</p>
-            <p><strong>Cons:</strong> Can trigger false positives (beaches, portraits), limited accuracy</p>
-        </div>
+class SimpleNSFWDetector {
+    constructor() {
+        this.model = null;
+        this.isLoading = false;
+    }
 
-        <div class="explanation-section">
-            <div class="explanation-title">3. Color Analysis</div>
-            <p>Examines color distribution, saturation, and specific color patterns often found in mature content.</p>
-            <p><strong>Pros:</strong> Fast, catches certain visual patterns</p>
-            <p><strong>Cons:</strong> High false positive rate, not reliable alone</p>
-        </div>
+    async loadModel() {
+        if (this.model) return this.model;
+        if (this.isLoading) {
+            // Wait for existing load to complete
+            while (this.isLoading) {
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+            return this.model;
+        }
 
-        <div class="explanation-section">
-            <div class="explanation-title">4. Edge Detection</div>
-            <p>Uses computer vision to detect edges and shapes that might indicate mature content.</p>
-            <p><strong>Pros:</strong> Can detect certain geometric patterns</p>
-            <p><strong>Cons:</strong> Very basic, high false positive rate</p>
+        try {
+            this.isLoading = true;
+            console.log('Loading NSFW detection model...');
+            this.model = await window.nsfwjs.load();
+            console.log('NSFW model loaded successfully');
+            return this.model;
+        } catch (error) {
+            console.error('Failed to load NSFW model:', error);
+            throw error;
+        } finally {
+            this.isLoading = false;
+        }
+    }
+
+    async analyzeImage(imageElement) {
+        try {
+            const model = await this.loadModel();
+            const predictions = await model.classify(imageElement);
+            
+            // Calculate risk score (0-100)
+            const nsfwScore = predictions.find(p => p.className === 'Porn')?.probability || 0;
+            const sexyScore = predictions.find(p => p.className === 'Sexy')?.probability || 0;
+            const hentaiScore = predictions.find(p => p.className === 'Hentai')?.probability || 0;
+            
+            const riskScore = Math.round((nsfwScore + sexyScore * 0.7 + hentaiScore) * 100);
+            
+            return {
+                riskScore, // 0-100 (higher = more likely NSFW)
+                isNSFW: riskScore > 50,
+                predictions,
+                categories: {
+                    porn: Math.round(nsfwScore * 100),
+                    sexy: Math.round(sexyScore * 100),
+                    hentai: Math.round(hentaiScore * 100),
+                    neutral: Math.round((predictions.find(p => p.className === 'Neutral')?.probability || 0) * 100),
+                    drawing: Math.round((predictions.find(p => p.className === 'Drawing')?.probability || 0) * 100)
+                }
+            };
+        } catch (error) {
+            console.error('Error analyzing image:', error);
+            throw error;
+        }
+    }
+
+    // Helper method to analyze image from file input
+    async analyzeFile(file) {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = async () => {
+                try {
+                    const result = await this.analyzeImage(img);
+                    resolve(result);
+                } catch (error) {
+                    reject(error);
+                }
+            };
+            img.onerror = () => reject(new Error('Failed to load image'));
+            img.src = URL.createObjectURL(file);
+        });
+    }
+
+    // Helper method to analyze image from URL
+    async analyzeURL(imageUrl) {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.crossOrigin = 'anonymous'; // For cross-origin images
+            img.onload = async () => {
+                try {
+                    const result = await this.analyzeImage(img);
+                    resolve(result);
+                } catch (error) {
+                    reject(error);
+                }
+            };
+            img.onerror = () => reject(new Error('Failed to load image from URL'));
+            img.src = imageUrl;
+        });
+    }
+}
+
+// Usage Examples:
+
+// 1. Initialize detector
+const nsfwDetector = new SimpleNSFWDetector();
+
+// 2. Analyze existing img element
+/*
+const imgElement = document.querySelector('img');
+nsfwDetector.analyzeImage(imgElement).then(result => {
+    console.log('Risk Score:', result.riskScore + '%');
+    console.log('Is NSFW:', result.isNSFW);
+    console.log('Categories:', result.categories);
+});
+*/
+
+// 3. Analyze file from input
+/*
+document.querySelector('input[type="file"]').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+        try {
+            const result = await nsfwDetector.analyzeFile(file);
+            console.log('Analysis result:', result);
+            
+            if (result.isNSFW) {
+                alert('⚠️ This image may contain inappropriate content');
+            } else {
+                alert('✅ Image appears safe');
+            }
+        } catch (error) {
+            console.error('Analysis failed:', error);
+        }
+    }
+});
+*/
+
+// 4. Analyze image from URL
+/*
+nsfwDetector.analyzeURL('https://example.com/image.jpg').then(result => {
+    console.log('URL analysis result:', result);
+}).catch(error => {
+    console.error('Failed to analyze URL:', error);
+});
+*/
+        </div>
+        
+        <div style="background: #e8f4fd; padding: 20px; border-radius: 10px; margin: 20px 0; border-left: 4px solid #2196f3;">
+            <h3 style="margin-top: 0; color: #1976d2;">📝 Implementation Notes:</h3>
+            <ul style="margin-bottom: 0; color: #424242;">
+                <li><strong>Include the script:</strong> Add the bundle script to your HTML head</li>
+                <li><strong>Cross-origin images:</strong> May require CORS headers for external images</li>
+                <li><strong>Model loading:</strong> First analysis takes a few seconds to load the model</li>
+                <li><strong>Risk scoring:</strong> 0-30 = Safe, 31-70 = Moderate, 71-100 = High Risk</li>
+                <li><strong>File size:</strong> The model is ~1MB and loads automatically</li>
+            </ul>
         </div>
     </div>
 
@@ -327,6 +459,41 @@
     <script src="nsfw.bundle.js"></script>
 
     <script>
+        // Add copy to clipboard functionality
+        document.getElementById('copyButton').addEventListener('click', async () => {
+            const codeText = document.getElementById('codeSnippet').textContent;
+            
+            try {
+                await navigator.clipboard.writeText(codeText);
+                const button = document.getElementById('copyButton');
+                const originalText = button.textContent;
+                button.textContent = 'Copied! ✓';
+                button.style.background = '#28a745';
+                
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.style.background = '#667eea';
+                }, 2000);
+            } catch (error) {
+                console.error('Failed to copy to clipboard:', error);
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = codeText;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                
+                const button = document.getElementById('copyButton');
+                button.textContent = 'Copied! ✓';
+                button.style.background = '#28a745';
+                setTimeout(() => {
+                    button.textContent = 'Copy to Clipboard';
+                    button.style.background = '#667eea';
+                }, 2000);
+            }
+        });
+
         class ImageMaturityDetector {
             constructor() {
                 this.nsfwModel = null;
