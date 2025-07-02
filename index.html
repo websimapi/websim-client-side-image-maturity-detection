@@ -953,6 +953,9 @@ Promise.all(Array.from(images).map(img =>
 
         // Load NSFW model in background
         window.addEventListener('load', async () => {
+            // Initialize the detector after DOM is loaded
+            const detector = new ImageMaturityDetector();
+            
             try {
                 const statusEl = document.getElementById('nsfwStatus');
                 if (statusEl) {
