@@ -266,77 +266,10 @@
         </div>
     </div>
 
-    <div class="analysis-grid" id="analysisGrid" style="display: none;">
-        <div class="method-card" id="nsfwCard">
-            <div class="method-title">
-                🧠 NSFW.js Model
-                <span class="status loading" id="nsfwStatus">Loading...</span>
-            </div>
-            <div class="method-description">
-                Pre-trained neural network specifically designed for NSFW content detection
-            </div>
-            <div class="progress-bar">
-                <div class="progress-fill" id="nsfwProgress"></div>
-            </div>
-            <div class="result" id="nsfwResult" style="display: none;"></div>
-        </div>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.11.0/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/nsfwjs@2.4.2/dist/nsfwjs.min.js"></script>
 
-        <div class="method-card" id="skinCard">
-            <div class="method-title">
-                🎨 Skin Tone Detection
-                <span class="status loading" id="skinStatus">Ready</span>
-            </div>
-            <div class="method-description">
-                Analyzes pixel colors to detect percentage of skin-toned areas
-            </div>
-            <div class="progress-bar">
-                <div class="progress-fill" id="skinProgress"></div>
-            </div>
-            <div class="result" id="skinResult" style="display: none;"></div>
-        </div>
-
-        <div class="method-card" id="colorCard">
-            <div class="method-title">
-                🌈 Color Analysis
-                <span class="status loading" id="colorStatus">Ready</span>
-            </div>
-            <div class="method-description">
-                Examines color distribution and saturation patterns
-            </div>
-            <div class="progress-bar">
-                <div class="progress-fill" id="colorProgress"></div>
-            </div>
-            <div class="result" id="colorResult" style="display: none;"></div>
-        </div>
-
-        <div class="method-card" id="edgeCard">
-            <div class="method-title">
-                📐 Edge Detection
-                <span class="status loading" id="edgeStatus">Ready</span>
-            </div>
-            <div class="method-description">
-                Uses computer vision to detect edges and shape patterns
-            </div>
-            <div class="progress-bar">
-                <div class="progress-fill" id="edgeProgress"></div>
-            </div>
-            <div class="result" id="edgeResult" style="display: none;"></div>
-        </div>
-    </div>
-
-    <script type="importmap">
-    {
-        "imports": {
-            "@tensorflow/tfjs": "https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0/dist/tf.min.js",
-            "nsfwjs": "https://cdn.jsdelivr.net/npm/nsfwjs@2.4.2/dist/nsfwjs.min.js"
-        }
-    }
-    </script>
-
-    <script type="module">
-        import * as tf from '@tensorflow/tfjs';
-        import * as nsfwjs from 'nsfwjs';
-
+    <script>
         class ImageMaturityDetector {
             constructor() {
                 this.nsfwModel = null;
@@ -381,12 +314,13 @@
 
                 const reader = new FileReader();
                 reader.onload = (e) => {
+                    previewImage.onload = () => {
+                        // Start analysis only after image is fully loaded
+                        previewContainer.style.display = 'block';
+                        analysisGrid.style.display = 'grid';
+                        this.analyzeImage(previewImage);
+                    };
                     previewImage.src = e.target.result;
-                    previewContainer.style.display = 'block';
-                    analysisGrid.style.display = 'grid';
-                    
-                    // Start analysis
-                    this.analyzeImage(previewImage);
                 };
                 reader.readAsDataURL(file);
             }
@@ -455,10 +389,16 @@
                     
                     const canvas = document.createElement('canvas');
                     const ctx = canvas.getContext('2d');
-                    canvas.width = imageElement.width;
-                    canvas.height = imageElement.height;
                     
-                    ctx.drawImage(imageElement, 0, 0);
+                    // Wait for image to be fully loaded and set proper dimensions
+                    canvas.width = imageElement.naturalWidth || imageElement.width;
+                    canvas.height = imageElement.naturalHeight || imageElement.height;
+                    
+                    if (canvas.width === 0 || canvas.height === 0) {
+                        throw new Error('Image dimensions are invalid');
+                    }
+                    
+                    ctx.drawImage(imageElement, 0, 0, canvas.width, canvas.height);
                     this.updateProgress('skin', 50);
                     
                     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
@@ -524,10 +464,15 @@
                     
                     const canvas = document.createElement('canvas');
                     const ctx = canvas.getContext('2d');
-                    canvas.width = imageElement.width;
-                    canvas.height = imageElement.height;
                     
-                    ctx.drawImage(imageElement, 0, 0);
+                    canvas.width = imageElement.naturalWidth || imageElement.width;
+                    canvas.height = imageElement.naturalHeight || imageElement.height;
+                    
+                    if (canvas.width === 0 || canvas.height === 0) {
+                        throw new Error('Image dimensions are invalid');
+                    }
+                    
+                    ctx.drawImage(imageElement, 0, 0, canvas.width, canvas.height);
                     this.updateProgress('color', 50);
                     
                     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
@@ -601,10 +546,15 @@
                     
                     const canvas = document.createElement('canvas');
                     const ctx = canvas.getContext('2d');
-                    canvas.width = imageElement.width;
-                    canvas.height = imageElement.height;
                     
-                    ctx.drawImage(imageElement, 0, 0);
+                    canvas.width = imageElement.naturalWidth || imageElement.width;
+                    canvas.height = imageElement.naturalHeight || imageElement.height;
+                    
+                    if (canvas.width === 0 || canvas.height === 0) {
+                        throw new Error('Image dimensions are invalid');
+                    }
+                    
+                    ctx.drawImage(imageElement, 0, 0, canvas.width, canvas.height);
                     this.updateProgress('edge', 40);
                     
                     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
@@ -743,4 +693,3 @@
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon='{"version":"2024.11.0","token":"4c6229722a6346bc8eb5cb0e5eae5d41","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body>
 </html>
-
