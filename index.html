@@ -227,12 +227,26 @@
         
         <div style="position: relative; background: #1e1e1e; color: #ffffff; padding: 20px; border-radius: 10px; margin: 20px 0; font-family: Monaco, monospace; font-size: 14px; line-height: 1.4; overflow-x: auto;">
             <button id="copyButton" style="position: absolute; top: 10px; right: 10px; background: #667eea; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; font-size: 12px;">Copy to Clipboard</button>
-            <pre id="codeSnippet" style="margin: 0; white-space: pre-wrap;">// Simple Client-Side NSFW Detection
-// Include this script tag in your HTML head first:
-&lt;script src="https://api.websim.com/blobs/0197cc2d-1c44-73ff-86ab-2c58b5d8657d.js"&gt;&lt;/script&gt;
+            <pre id="codeSnippet" style="margin: 0; white-space: pre-wrap;">// Complete Client-Side NSFW Detection Implementation
+// Copy this entire code block into your website
 
-// Then add this JavaScript code:
-&lt;script&gt;
+// 1. Add this script tag to your HTML head section:
+/*
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+    &lt;!-- Add the NSFW detection bundle --&gt;
+    &lt;script src="https://api.websim.com/blobs/0197cc2d-1c44-73ff-86ab-2c58b5d8657d.js"&gt;&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;!-- Your HTML content --&gt;
+    &lt;input type="file" id="imageInput" accept="image/*"&gt;
+    &lt;img id="testImage" src="your-image.jpg" crossorigin="anonymous"&gt;
+    
+    &lt;script&gt;
+        // 2. Add this JavaScript code:
+*/
+
 class SimpleNSFWDetector {
     constructor() {
         this.model = null;
@@ -242,7 +256,7 @@ class SimpleNSFWDetector {
     async loadModel() {
         if (this.model) return this.model;
         if (this.isLoading) {
-            // Wait for existing load to complete
+            // Wait for existing load to complete  
             while (this.isLoading) {
                 await new Promise(resolve => setTimeout(resolve, 100));
             }
@@ -252,7 +266,7 @@ class SimpleNSFWDetector {
         try {
             this.isLoading = true;
             console.log('Loading NSFW detection model...');
-            // The bundle exposes nsfwjs globally
+            // The bundle script exposes nsfwjs globally
             this.model = await window.nsfwjs.load();
             console.log('NSFW model loaded successfully');
             return this.model;
@@ -332,71 +346,88 @@ class SimpleNSFWDetector {
 
 // Usage Examples:
 
-// 1. Initialize detector (make sure the script is loaded first!)
-document.addEventListener('DOMContentLoaded', async () => {
-    // Wait for the bundle to be available
-    if (typeof window.nsfwjs === 'undefined') {
-        console.error('NSFW bundle not loaded. Make sure to include the script tag.');
-        return;
-    }
-    
-    const nsfwDetector = new SimpleNSFWDetector();
+// 1. Initialize detector (do this once)
+const nsfwDetector = new SimpleNSFWDetector();
 
-    // 2. Analyze existing img element
-    /*
-    const imgElement = document.querySelector('img');
-    if (imgElement) {
-        nsfwDetector.analyzeImage(imgElement).then(result => {
-            console.log('Risk Score:', result.riskScore + '%');
-            console.log('Is NSFW:', result.isNSFW);
-            console.log('Categories:', result.categories);
-        }).catch(error => {
-            console.error('Analysis failed:', error);
-        });
-    }
-    */
+// 2. Analyze existing img element
+const imgElement = document.querySelector('#testImage'); // your img element
+if (imgElement) {
+    nsfwDetector.analyzeImage(imgElement).then(result => {
+        console.log('Risk Score:', result.riskScore + '%');
+        console.log('Is NSFW:', result.isNSFW);
+        console.log('Categories:', result.categories);
+        
+        if (result.isNSFW) {
+            console.warn('⚠️ This image may contain inappropriate content');
+            // Hide image or show warning
+            imgElement.style.filter = 'blur(20px)';
+        }
+    }).catch(error => {
+        console.error('Analysis failed:', error);
+    });
+}
 
-    // 3. Analyze file from input
-    /*
-    document.querySelector('input[type="file"]')?.addEventListener('change', async (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            try {
-                const result = await nsfwDetector.analyzeFile(file);
-                console.log('Analysis result:', result);
-                
-                if (result.isNSFW) {
-                    alert('⚠️ This image may contain inappropriate content');
-                } else {
-                    alert('✅ Image appears safe');
-                }
-            } catch (error) {
-                console.error('Analysis failed:', error);
+// 3. Analyze file from input
+document.querySelector('#imageInput')?.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+        try {
+            console.log('Analyzing uploaded image...');
+            const result = await nsfwDetector.analyzeFile(file);
+            console.log('Analysis result:', result);
+            
+            if (result.isNSFW) {
+                alert('⚠️ This image may contain inappropriate content (Risk: ' + result.riskScore + '%)');
+            } else {
+                alert('✅ Image appears safe (Risk: ' + result.riskScore + '%)');
             }
+        } catch (error) {
+            console.error('Analysis failed:', error);
+            alert('❌ Failed to analyze image: ' + error.message);
+        }
+    }
+});
+
+// 4. Analyze image from URL
+/*
+nsfwDetector.analyzeURL('https://example.com/image.jpg').then(result => {
+    console.log('URL analysis result:', result);
+    if (result.isNSFW) {
+        console.log('NSFW content detected!');
+    }
+}).catch(error => {
+    console.error('Failed to analyze URL:', error);
+});
+*/
+
+// 5. Batch analyze multiple images
+/*
+const images = document.querySelectorAll('img');
+Promise.all(Array.from(images).map(img => 
+    nsfwDetector.analyzeImage(img).catch(e => ({error: e.message}))
+)).then(results => {
+    results.forEach((result, index) => {
+        if (result.error) {
+            console.log(`Image ${index}: Error - ${result.error}`);
+        } else if (result.isNSFW) {
+            console.log(`Image ${index}: NSFW detected (${result.riskScore}%)`);
+            images[index].style.filter = 'blur(10px)';
+        } else {
+            console.log(`Image ${index}: Safe (${result.riskScore}%)`);
         }
     });
-    */
-
-    // 4. Analyze image from URL
-    /*
-    nsfwDetector.analyzeURL('https://example.com/image.jpg').then(result => {
-        console.log('URL analysis result:', result);
-    }).catch(error => {
-        console.error('Failed to analyze URL:', error);
-    });
-    */
 });
-&lt;/script&gt;</pre>
+*/
+        </div>
         
         <div style="background: #e8f4fd; padding: 20px; border-radius: 10px; margin: 20px 0; border-left: 4px solid #2196f3;">
             <h3 style="margin-top: 0; color: #1976d2;">📝 Implementation Notes:</h3>
             <ul style="margin-bottom: 0; color: #424242;">
-                <li><strong>Include the script:</strong> Add <code>&lt;script src="https://api.websim.com/blobs/0197cc2d-1c44-73ff-86ab-2c58b5d8657d.js"&gt;&lt;/script&gt;</code> to your HTML head</li>
-                <li><strong>Global access:</strong> The bundle exposes <code>window.nsfwjs</code> and <code>window.tf</code> globally</li>
+                <li><strong>Include the script:</strong> Add the bundle script to your HTML head</li>
                 <li><strong>Cross-origin images:</strong> May require CORS headers for external images</li>
                 <li><strong>Model loading:</strong> First analysis takes a few seconds to load the model</li>
                 <li><strong>Risk scoring:</strong> 0-30 = Safe, 31-70 = Moderate, 71-100 = High Risk</li>
-                <li><strong>File size:</strong> The model bundle is ~1MB and loads automatically</li>
+                <li><strong>File size:</strong> The model is ~1MB and loads automatically</li>
             </ul>
         </div>
     </div>
