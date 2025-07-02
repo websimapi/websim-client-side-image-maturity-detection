@@ -325,10 +325,9 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.11.0/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/nsfwjs@2.4.2/dist/nsfwjs.min.js"></script>
 
-    <script type="module">
-        import nsfwjs from 'https://cdn.jsdelivr.net/npm/nsfwjs@4.2.1/+esm';
-
+    <script>
         class ImageMaturityDetector {
             constructor() {
                 this.nsfwModel = null;
@@ -415,6 +414,7 @@
                         this.isLoadingModel = true;
                         const statusEl = document.getElementById('nsfwStatus');
                         if (statusEl) statusEl.textContent = 'Loading model...';
+                        // Use global nsfwjs instead of imported module
                         this.nsfwModel = await nsfwjs.load();
                         this.updateProgress('nsfw', 60);
                     }
@@ -744,6 +744,7 @@
                 const statusEl = document.getElementById('nsfwStatus');
                 if (statusEl) {
                     statusEl.textContent = 'Loading model...';
+                    // Use global nsfwjs instead of imported module  
                     detector.nsfwModel = await nsfwjs.load();
                     statusEl.textContent = 'Ready';
                     statusEl.className = 'status complete';
