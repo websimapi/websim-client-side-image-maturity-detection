@@ -325,9 +325,10 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.11.0/dist/tf.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/nsfwjs@2.4.2/dist/nsfwjs.min.js"></script>
 
-    <script>
+    <script type="module">
+        import nsfwjs from 'https://cdn.jsdelivr.net/npm/nsfwjs@4.2.1/+esm';
+
         class ImageMaturityDetector {
             constructor() {
                 this.nsfwModel = null;
@@ -412,12 +413,14 @@
                     
                     if (!this.nsfwModel && !this.isLoadingModel) {
                         this.isLoadingModel = true;
-                        document.getElementById('nsfwStatus').textContent = 'Loading model...';
+                        const statusEl = document.getElementById('nsfwStatus');
+                        if (statusEl) statusEl.textContent = 'Loading model...';
                         this.nsfwModel = await nsfwjs.load();
                         this.updateProgress('nsfw', 60);
                     }
 
-                    document.getElementById('nsfwStatus').textContent = 'Analyzing...';
+                    const statusEl = document.getElementById('nsfwStatus');
+                    if (statusEl) statusEl.textContent = 'Analyzing...';
                     this.updateProgress('nsfw', 80);
 
                     const predictions = await this.nsfwModel.classify(imageElement);
@@ -738,13 +741,19 @@
         // Load NSFW model in background
         window.addEventListener('load', async () => {
             try {
-                document.getElementById('nsfwStatus').textContent = 'Loading model...';
-                detector.nsfwModel = await nsfwjs.load();
-                document.getElementById('nsfwStatus').textContent = 'Ready';
-                document.getElementById('nsfwStatus').className = 'status complete';
+                const statusEl = document.getElementById('nsfwStatus');
+                if (statusEl) {
+                    statusEl.textContent = 'Loading model...';
+                    detector.nsfwModel = await nsfwjs.load();
+                    statusEl.textContent = 'Ready';
+                    statusEl.className = 'status complete';
+                }
             } catch (error) {
-                document.getElementById('nsfwStatus').textContent = 'Model failed to load';
-                document.getElementById('nsfwStatus').className = 'status error';
+                const statusEl = document.getElementById('nsfwStatus');
+                if (statusEl) {
+                    statusEl.textContent = 'Model failed to load';
+                    statusEl.className = 'status error';
+                }
             }
         });
     </script>
