@@ -228,9 +228,11 @@
         <div style="position: relative; background: #1e1e1e; color: #ffffff; padding: 20px; border-radius: 10px; margin: 20px 0; font-family: Monaco, monospace; font-size: 14px; line-height: 1.4; overflow-x: auto;">
             <button id="copyButton" style="position: absolute; top: 10px; right: 10px; background: #667eea; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; font-size: 12px;">Copy to Clipboard</button>
             <pre id="codeSnippet" style="margin: 0; white-space: pre-wrap;">// Simple Client-Side NSFW Detection
-// Add this script tag to your HTML head:
-// &lt;script src="https://api.websim.com/blobs/0197cc2d-1c44-73ff-86ab-2c58b5d8657d.js"&gt;&lt;/script&gt;
+// Include this script tag in your HTML head first:
+&lt;script src="https://api.websim.com/blobs/0197cc2d-1c44-73ff-86ab-2c58b5d8657d.js"&gt;&lt;/script&gt;
 
+// Then add this JavaScript code:
+&lt;script&gt;
 class SimpleNSFWDetector {
     constructor() {
         this.model = null;
@@ -384,7 +386,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
     */
 });
-        </div>
+&lt;/script&gt;</pre>
         
         <div style="background: #e8f4fd; padding: 20px; border-radius: 10px; margin: 20px 0; border-left: 4px solid #2196f3;">
             <h3 style="margin-top: 0; color: #1976d2;">📝 Implementation Notes:</h3>
