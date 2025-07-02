@@ -266,6 +266,64 @@
         </div>
     </div>
 
+    <div class="analysis-grid" id="analysisGrid" style="display: none;">
+        <div class="method-card">
+            <div class="method-title">
+                🧠 NSFW.js Model
+                <span class="status loading" id="nsfwStatus">Ready</span>
+            </div>
+            <div class="method-description">
+                Pre-trained neural network specifically designed for NSFW content detection
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="nsfwProgress"></div>
+            </div>
+            <div class="result" id="nsfwResult" style="display: none;"></div>
+        </div>
+
+        <div class="method-card">
+            <div class="method-title">
+                🎨 Skin Tone Detection
+                <span class="status loading" id="skinStatus">Ready</span>
+            </div>
+            <div class="method-description">
+                Analyzes pixel colors to detect percentage of skin-toned areas
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="skinProgress"></div>
+            </div>
+            <div class="result" id="skinResult" style="display: none;"></div>
+        </div>
+
+        <div class="method-card">
+            <div class="method-title">
+                🌈 Color Analysis
+                <span class="status loading" id="colorStatus">Ready</span>
+            </div>
+            <div class="method-description">
+                Examines color distribution and saturation patterns
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="colorProgress"></div>
+            </div>
+            <div class="result" id="colorResult" style="display: none;"></div>
+        </div>
+
+        <div class="method-card">
+            <div class="method-title">
+                📐 Edge Detection
+                <span class="status loading" id="edgeStatus">Ready</span>
+            </div>
+            <div class="method-description">
+                Uses computer vision to detect edges and shape patterns
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="edgeProgress"></div>
+            </div>
+            <div class="result" id="edgeResult" style="display: none;"></div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.11.0/dist/tf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/nsfwjs@2.4.2/dist/nsfwjs.min.js"></script>
 
